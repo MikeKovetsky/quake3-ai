@@ -1,5 +1,7 @@
 # Quake III Arena — AI-Upscaled
 
+[**Play in browser**](https://mikekovetsky.github.io/quake3-ai/Quake3.htm?demo)
+
 AI-upscaled Quake III Arena running in the browser. Uses [Dawnlight](https://github.com/MikeKovetsky/dawnlight) texture upscaling pipeline powered by fal.ai to transform classic Q3 textures from 64-256px to 1024px+.
 
 Each remaster takes about 40 minutes to generate.
