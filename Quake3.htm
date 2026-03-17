@@ -25,9 +25,15 @@
       #email{position:fixed;right:0;bottom:0;padding-right:15px;line-height:3.2;font-family:Arial;font-size:16px;color:#fff;user-select:none;-webkit-user-select:none}
       #email a{text-decoration:none;color:#fff;background-color:transparent;border:0;outline:0}
       #email a:focus{text-decoration: none; outline:1px solid #fff}
-      #demo-loader{display:none;position:fixed;left:0;bottom:10px;right:0;width:64px;height:64px;margin:0 auto;filter:drop-shadow(2px 2px 2px #000);cursor:pointer;background-color:transparent;border:0;outline:0}
-      #demo-loader:focus{outline:1px solid #fff}
-      #demo-loader:hover{filter:brightness(110%)}
+      #mode-picker{display:none;position:fixed;left:0;right:0;bottom:24px;z-index:10;text-align:center}
+      #mode-picker h2{margin:0 0 14px;font-family:'Trebuchet MS',Arial,sans-serif;font-size:15px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:3px;text-shadow:0 1px 4px rgba(0,0,0,.8)}
+      .mode-cards{display:inline-flex;gap:10px;flex-wrap:wrap;justify-content:center;padding:0 16px}
+      .mode-card{width:130px;padding:14px 10px 16px;border:2px solid rgba(255,255,255,.15);border-radius:10px;background:rgba(0,0,0,.65);backdrop-filter:blur(8px);cursor:pointer;transition:all .2s ease;text-align:center;outline:0}
+      .mode-card:hover{border-color:rgba(255,255,255,.5);background:rgba(0,0,0,.8);transform:translateY(-3px)}
+      .mode-card:focus{border-color:#fff}
+      .mode-dot{width:36px;height:36px;border-radius:50%;margin:0 auto 10px;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+      .mode-title{font-family:'Trebuchet MS',Arial,sans-serif;font-size:13px;font-weight:bold;color:#fff;margin:0 0 5px;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+      .mode-desc{font-family:Arial,sans-serif;font-size:10px;color:rgba(255,255,255,.55);line-height:1.4;margin:0}
       #file-selector{display:none;position:fixed;left:0;bottom:10px;right:0;width:64px;height:64px;margin:0 auto;filter:drop-shadow(2px 2px 2px #000);cursor:pointer;background-color:transparent;border:0;outline:0}
       #file-selector:focus{outline:1px solid #fff}
       #file-selector:hover{filter:brightness(110%)}
@@ -73,18 +79,31 @@
     </div>
     <div id="container">
       <div class="logo"></div>
-      <div id="email">
-        <a href="mailto:info@lrusso.com">info@lrusso.com</a>
+      <div id="mode-picker">
+        <h2>Choose Texture Mode</h2>
+        <div class="mode-cards">
+          <div class="mode-card" id="demo-loader" tabindex="1">
+            <div class="mode-dot" style="background:#b9180b"></div>
+            <p class="mode-title">Original</p>
+            <p class="mode-desc">Classic Q3 textures, 64-256px</p>
+          </div>
+          <div class="mode-card" id="demo-hd-loader" tabindex="2">
+            <div class="mode-dot" style="background:linear-gradient(135deg,#FFD700,#FFA000)"></div>
+            <p class="mode-title">AI Upscaled</p>
+            <p class="mode-desc">Faithful upscale to 1024px via Nano Banana Pro</p>
+          </div>
+          <div class="mode-card" id="demo-photo-loader" tabindex="3">
+            <div class="mode-dot" style="background:linear-gradient(135deg,#00E5FF,#0077FF)"></div>
+            <p class="mode-title">Photorealistic</p>
+            <p class="mode-desc">Real materials via Nano Banana 2 (Gemini&nbsp;3.1)</p>
+          </div>
+          <div class="mode-card" id="demo-kitty-loader" tabindex="4">
+            <div class="mode-dot" style="background:linear-gradient(135deg,#FF69B4,#FF1493)"></div>
+            <p class="mode-title">Hello Kitty</p>
+            <p class="mode-desc">Kawaii Sanrio makeover via Nano&nbsp;Banana&nbsp;2</p>
+          </div>
+        </div>
       </div>
-      <button id="demo-loader">
-        <svg width="100%" height="100%" viewBox="0 0 502 502">
-          <circle fill="#FFF" cx="250" cy="250" r="200" />
-          <path
-            fill="#b9180b"
-            d="M251,1C112.929,1,1,112.929,1,251s111.929,250,250,250s250-111.929,250-250S389.071,1,251,1z M164.75,366  V136l230,115L164.75,366z"
-          />
-        </svg>
-      </button>
       <button id="file-selector">
         <svg width="100%" height="100%" viewBox="0 0 502 502">
           <circle fill="#FFF" cx="250" cy="250" r="200" />
@@ -101,6 +120,10 @@
       var container = document.getElementById("container")
       var gameWrapper = document.getElementById("game")
       var demoLoader = document.getElementById("demo-loader")
+      var demoHdLoader = document.getElementById("demo-hd-loader")
+      var demoPhotoLoader = document.getElementById("demo-photo-loader")
+      var demoKittyLoader = document.getElementById("demo-kitty-loader")
+      var modePicker = document.getElementById("mode-picker")
       var fileSelector = document.getElementById("file-selector")
       var fileInput = document.getElementById("file-input")
       var pleaseWait = document.querySelector(".pleasewait")
@@ -114,8 +137,7 @@
           var demoRequired = currentURL.has("demo")
 
           if (demoRequired) {
-            demoLoader.style.display = "block"
-            demoLoader.tabIndex = 1
+            modePicker.style.display = "block"
           } else {
             fileSelector.style.display = "block"
             fileSelector.tabIndex = 1
@@ -156,6 +178,64 @@
             }
 
             xhr.send(null)
+          })
+
+          function loadPk3Parts(filenames) {
+            container.style.display = "none"
+            pleaseWait.style.display = "block"
+
+            var blobs = []
+            var loaded = 0
+
+            for (var i = 0; i < filenames.length; i++) {
+              ;(function (idx) {
+                var xhr = new XMLHttpRequest()
+                xhr.open("GET", filenames[idx], true)
+                xhr.responseType = "arraybuffer"
+                xhr.onreadystatechange = function () {
+                  if (xhr.readyState === 4 && xhr.status === 200) {
+                    var blob = new Blob([xhr.response], {
+                      type: "application/octet-stream",
+                    })
+                    blob.name = "pak" + idx + ".pk3"
+                    blobs[idx] = blob
+                    loaded++
+
+                    if (loaded === filenames.length) {
+                      embedQuake3({
+                        container: "game",
+                        files: blobs,
+                        cbStarted: function cbStarted() {
+                          pleaseWait.style.display = "none"
+                        },
+                      })
+                    }
+                  }
+                }
+                xhr.send(null)
+              })(i)
+            }
+          }
+
+          demoHdLoader.addEventListener("click", function () {
+            loadPk3Parts([
+              "DEMO_HD_0.pk3", "DEMO_HD_1.pk3", "DEMO_HD_2.pk3"
+            ])
+          })
+
+          demoPhotoLoader.addEventListener("click", function () {
+            loadPk3Parts([
+              "DEMO_PHOTO_0.pk3", "DEMO_PHOTO_1.pk3", "DEMO_PHOTO_2.pk3",
+              "DEMO_PHOTO_3.pk3", "DEMO_PHOTO_4.pk3", "DEMO_PHOTO_5.pk3"
+            ])
+          })
+
+          demoKittyLoader.addEventListener("click", function () {
+            loadPk3Parts([
+              "DEMO_KITTY_0.pk3", "DEMO_KITTY_1.pk3", "DEMO_KITTY_2.pk3",
+              "DEMO_KITTY_3.pk3", "DEMO_KITTY_4.pk3", "DEMO_KITTY_5.pk3",
+              "DEMO_KITTY_6.pk3"
+            ])
           })
 
           fileInput.addEventListener("change", function (event) {

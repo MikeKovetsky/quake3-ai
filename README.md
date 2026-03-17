@@ -1,48 +1,36 @@
-# Quake III Arena
+# Quake III Arena — AI-Upscaled
 
-A Quake III Arena port designed for running in vanilla JavaScript pre-ECMAScript 2015 (no WebAssembly). Simply open the link below, click the red icon, and select all the `PK3` files and `q3config.cfg` (optional); all files will be loaded and booted automatically. If you have the commercial version and you want to play it, you need to have the Point Release 1.32 version, this means than you need to have and select at least the following files: `pak0.pk3`, `pak1.pk3` and `pak4.pk3`. The multiplayer mode is not available in this project, for multiplayer check the original project link at the bottom of this document.
+AI-upscaled Quake III Arena running in the browser. Uses [Dawnlight](https://github.com/MikeKovetsky/dawnlight) texture upscaling pipeline powered by fal.ai to transform classic Q3 textures from 64-256px to 1024px+.
 
-![alt screenshot](https://lrusso.github.io/Quake3/Quake3.jpg)
+Each remaster takes about 40 minutes to generate.
 
-## Links:
+Based on [lrusso/Quake3](https://github.com/lrusso/Quake3) browser port.
 
-- [Quake III Arena](https://lrusso.github.io/Quake3/Quake3.htm)
-- [Quake III Arena online demo](https://lrusso.github.io/Quake3/Quake3.htm?demo)
+## Texture Modes
 
-## How to use it:
+| Mode | Description |
+| :--- | :---------- |
+| **Original** | Classic Q3 textures (64-256px) |
+| **AI Upscaled** | Faithful upscale to 1024px |
+| **Photorealistic** | Real stone, metal, dirt |
+| **Hello Kitty** | Kawaii Sanrio makeover |
 
-Examples of loading local and online files can be found [here](https://github.com/lrusso/Quake3/blob/master/Quake3.htm#L131-L153) and [here](https://github.com/lrusso/Quake3/blob/master/Quake3.htm#L156-L167).
+## Screenshots
 
-```js
-embedQuake3({
-  container: "game",
-  files: event.target.files,
-  cbStarted: function cbStarted() {
-    pleaseWait.style.display = "none"
-  },
-})
+### Photorealistic
+
+![Photorealistic 1](screenshots/photo1.png)
+![Photorealistic 2](screenshots/photo2.png)
+
+### Hello Kitty
+
+![Hello Kitty 1](screenshots/kitty1.png)
+![Hello Kitty 2](screenshots/kitty2.png)
+![Hello Kitty 3](screenshots/kitty3.png)
+
+## Running locally
+
+```bash
+python3 -m http.server 8080
+# Open http://localhost:8080/Quake3.htm?demo
 ```
-
-| Parameter |            Type            | Required | Description            |
-| :-------- | :------------------------: | :------: | :--------------------- |
-| container |           string           |   yes    | Target element ID.     |
-| files     | Array of Blobs or FileList |   yes    | PK3s and q3config.cfg. |
-| cbStarted |          function          |    no    | Called on game start.  |
-
-## Special keys:
-
-| Action                | macOS Shortcut | Windows Shortcut | Safari Shortcut |
-| :-------------------- | :------------: | :--------------: | :-------------: |
-| Download q3config.cfg |  Command + P   |     Ctrl + P     |    Ctrl + P     |
-| Fullscreen mode       |  Command + F   |     Ctrl + F     |    Ctrl + F     |
-
-## Main differences with the original project:
-
-- Removed CDN dependency.
-- Removed cache flow in the LocalStorage.
-- Fixed build so it can handle PK3 files dynamically.
-- Fixed build so it can handle big files (the commercial version).
-
-## Based on the work of:
-
-https://github.com/inolen/quakejs
